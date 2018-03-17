@@ -54,6 +54,27 @@ prompt_end() {
   CURRENT_BG=''
 }
 
+
+function parse_git_dirty() {
+  local STATUS=''
+  local FLAGS
+  FLAGS=('--porcelain')
+  if [[ "$(command git config --get oh-my-zsh.hide-dirty)" != "1" ]]; then
+    if [[ $POST_1_7_2_GIT -gt 0 ]]; then
+      FLAGS+='--ignore-submodules=dirty'
+    fi
+    if [[ "$DISABLE_UNTRACKED_FILES_DIRTY" == "true" ]]; then
+      FLAGS+='--untracked-files=no'
+    fi
+    STATUS=$(command git status ${FLAGS} 2> /dev/null | tail -n1)
+  fi
+  if [[ -n $STATUS ]]; then
+    echo "$ZSH_THEME_GIT_PROMPT_DIRTY"
+  else
+    echo "$ZSH_THEME_GIT_PROMPT_CLEAN"
+  fi
+}
+
 ### Prompt components
 # Each component will draw itself, and hide itself if no information needs to be shown
 
@@ -172,6 +193,8 @@ build_prompt() {
   prompt_git
   prompt_end
 }
+
+setopt prompt_subst
 
 PROMPT='%{%f%b%k%}$(build_prompt)
 $(prompt_next_line) '
